@@ -6,7 +6,12 @@ const App = () => {
   return (
     <SafeAreaView style={styles.container}>
       <List />
-      <StatusBar style="auto" />
+      <StatusBar
+        barStyle="dark-content"
+        hidden={false}
+        backgroundColor="#FFF"
+        networkActivityIndicatorVisible={true}
+      />
     </SafeAreaView>
   );
 };
@@ -16,7 +21,7 @@ export default App;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#000',
     paddingTop: Platform.OS === 'android' ? 30 : 0,
   },
 });
