@@ -13,8 +13,11 @@
     "eslint-plugin-react-native": "^4.0.0",
     "expo": "~47.0.12",
     "expo-status-bar": "~1.4.2",
+    "feather-icons": "^4.29.0",
     "react": "18.1.0",
-    "react-native": "0.70.5"
+    "react-native": "0.70.5",
+    "react-native-feather": "^1.1.2",
+    "react-native-svg": "13.4.0"
   },
   "devDependencies": {
     "@babel/core": "^7.20.12",
@@ -25,5 +28,8 @@
     "eslint-plugin-react": "^7.32.0",
     "prettier": "^2.8.2"
   },
-  "private": true
+  "private": true,
+  "resolutions": {
+    "react-native-svg": "13.4.0"
+  }
 }
