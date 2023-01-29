@@ -101,7 +101,23 @@ const useUser = () => {
       throw new Error('checkUsername: ' + error.message);
     }
   };
-  return {getUserByToken, postUser, checkUsername};
+
+  const putUser = async (userData, token) => {
+    const options = {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-access-token': token,
+      },
+      body: JSON.stringify(userData),
+    };
+    try {
+      return await doFetch(baseUrl + 'users', options);
+    } catch (error) {
+      throw new Error('putUser: ' + error.message);
+    }
+  };
+  return {getUserByToken, postUser, checkUsername, putUser};
 };
 
 const useTag = () => {
