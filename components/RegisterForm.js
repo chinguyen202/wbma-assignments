@@ -7,15 +7,23 @@ function RegisterForm(props) {
   const {
     control,
     handleSubmit,
+    getValues,
     formState: {errors},
   } = useForm({
-    defaultValues: {username: '', password: '', email: '', full_name: ''},
+    defaultValues: {
+      username: '',
+      password: '',
+      confrimPassword: '',
+      email: '',
+      full_name: '',
+    },
     mode: 'onBlur',
   });
   const {postUser, checkUsername} = useUser();
 
   const register = async (registerData) => {
     console.log('Registering: ', registerData);
+    delete registerData.confrimPassword;
     try {
       const registerResult = await postUser(registerData);
       console.log('register result: ', registerResult);
@@ -65,7 +73,10 @@ function RegisterForm(props) {
         control={control}
         rules={{
           required: {value: true, message: 'This is required.'},
-          minLength: 5,
+          pattern: {
+            value: /(?=.*\p{Lu})(?=.*[0-9]).{5,}/u,
+            message: 'Min 5 characters, needs one number, one uppercase letter',
+          },
         }}
         render={({field: {onChange, onBlur, value}}) => (
           <Input
@@ -75,15 +86,48 @@ function RegisterForm(props) {
             placeholder="Password"
             secureTextEntry={true}
             autoCapitalize="none"
+            errorMessage={errors.password && errors.password.message}
           />
         )}
         name="password"
       />
-      {errors.password && <Text>Password (min. 5 chars) is required!</Text>}
 
       <Controller
         control={control}
-        rules={{required: {value: true, message: 'This is required.'}}}
+        rules={{
+          validate: (value) => {
+            if (value === getValues('password')) {
+              return true;
+            } else {
+              return 'password must match';
+            }
+          },
+        }}
+        render={({field: {onChange, onBlur, value}}) => (
+          <Input
+            onBlur={onBlur}
+            onChangeText={onChange}
+            value={value}
+            placeholder="Re-type password"
+            secureTextEntry={true}
+            autoCapitalize="none"
+            errorMessage={
+              errors.confrimPassword && errors.confrimPassword.message
+            }
+          />
+        )}
+        name="confrimPassword"
+      />
+
+      <Controller
+        control={control}
+        rules={{
+          required: {value: true, message: 'This is required.'},
+          pattern: {
+            value: /^[a-z0-9.]{1,64}@[a-z0-9.-]{2,64}/i,
+            message: 'Please enter a valid email!',
+          },
+        }}
         render={({field: {onChange, onBlur, value}}) => (
           <Input
             onBlur={onBlur}
@@ -91,15 +135,15 @@ function RegisterForm(props) {
             value={value}
             placeholder="Email"
             autoCapitalize="none"
+            errorMessage={errors.email && errors.email.message}
           />
         )}
         name="email"
       />
-      {errors.email && <Text>Email is required!</Text>}
 
       <Controller
         control={control}
-        rules={{minLength: 3}}
+        rules={{minLength: {value: 3, message: 'Min 3 characters.'}}}
         render={({field: {onChange, onBlur, value}}) => (
           <Input
             onBlur={onBlur}
@@ -107,13 +151,11 @@ function RegisterForm(props) {
             value={value}
             placeholder="Full name"
             autoCapitalize="words"
+            errorMessage={errors.full_name && errors.full_name.message}
           />
         )}
         name="full_name"
       />
-      {errors.full_name?.type === 'minLength' && (
-        <Text>Full name min length is 3 characters!</Text>
-      )}
       <Button title="Register!" onPress={handleSubmit(register)} />
     </>
   );
