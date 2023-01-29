@@ -1,14 +1,16 @@
-import React, {useContext, useEffect, useState} from 'react';
-import {StyleSheet, SafeAreaView, Text, Button, Image} from 'react-native';
-import {MainContext} from '../contexts/MainContext';
+import React from 'react';
+import {Button} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {MainContext} from '../contexts/MainContext';
 import {useTag} from '../hooks/ApiHooks';
-import {uploadsUrl} from '../utils/variables';
+import {uploadUrl} from '../utils/variables';
+import {Card, Icon, ListItem} from '@rneui/themed';
 
 const Profile = () => {
+  const {setIsLoggedIn, user, setUser} = React.useContext(MainContext);
   const {getFilesByTag} = useTag();
-  const {setIsLoggedIn, user, setUser} = useContext(MainContext);
-  const [avatar, setAvatar] = useState('');
+
+  const [avatar, setAvatar] = React.useState('http://placekitten.com/640'); // placekitten... is default if user has no avatar
 
   const loadAvatar = async () => {
     try {
@@ -19,47 +21,40 @@ const Profile = () => {
     }
   };
 
-  useEffect(() => {
+  React.useEffect(() => {
     loadAvatar();
   }, []);
 
   return (
-    <SafeAreaView style={styles.container}>
-      <Text>Profile</Text>
-      <Image style={styles.image} source={{uri: uploadsUrl + avatar}} />
-
-      <Text>Username: {user.username}</Text>
-      <Text>Email: {user.email}</Text>
-      <Text>Full name: {user.full_name}</Text>
+    <Card>
+      <Card.Title>Username: {user.username}</Card.Title>
+      <Card.Image source={{uri: uploadUrl + avatar}} />
+      <ListItem>
+        <ListItem.Title>
+          <Icon name="email" /> {user.email}
+        </ListItem.Title>
+      </ListItem>
+      <ListItem>
+        <ListItem.Title>
+          <Icon name="badge" />
+          {user.full_name}
+        </ListItem.Title>
+      </ListItem>
       <Button
         title="Logout!"
         onPress={async () => {
-          console.log('Logging out!');
+          console.log('Loggin out');
           setUser({});
           setIsLoggedIn(false);
           try {
             await AsyncStorage.clear();
           } catch (error) {
-            console.error('clearing asyncstorage failed', error);
+            console.warn('clearing AsyncStorage failed', error);
           }
         }}
       />
-    </SafeAreaView>
+    </Card>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingTop: 40,
-  },
-  image: {
-    width: 200,
-    height: 300,
-  },
-});
 
 export default Profile;
