@@ -12,7 +12,7 @@ import PropTypes from 'prop-types';
 import {MainContext} from '../contexts/MainContext';
 import {useUser} from '../hooks/ApiHooks';
 import LoginForm from '../components/LoginForm';
-import RegisterForm from '../components/RegisterForms';
+import RegisterForm from '../components/RegisterForm';
 import {Button, Text} from '@rneui/themed';
 
 const Login = ({navigation}) => {
