@@ -1,38 +1,40 @@
-import React, {useContext, useEffect} from 'react';
+import React from 'react';
 import {
   Keyboard,
   KeyboardAvoidingView,
   Platform,
   StyleSheet,
   TouchableOpacity,
-  View,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import PropTypes from 'prop-types';
 import {MainContext} from '../contexts/MainContext';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useUser} from '../hooks/ApiHooks';
 import LoginForm from '../components/LoginForm';
-import RegisterForm from '../components/RegisterForm';
+import RegisterForm from '../components/RegisterForms';
+import {Button, Text} from '@rneui/themed';
 
 const Login = ({navigation}) => {
-  const {setIsLoggedIn, setUser} = useContext(MainContext);
+  // props is needed for navigation
+  const {setIsLoggedIn, setUser} = React.useContext(MainContext);
   const {getUserByToken} = useUser();
+
+  const [toggleForm, setToggleForm] = React.useState(true);
 
   const checkToken = async () => {
     try {
       const userToken = await AsyncStorage.getItem('userToken');
-      // if no token available, do nothing
       if (userToken === null) return;
       const userData = await getUserByToken(userToken);
       console.log('checkToken', userData);
       setUser(userData);
       setIsLoggedIn(true);
     } catch (error) {
-      console.error('checkToken', error);
+      console.log('no valid token available');
     }
   };
 
-  useEffect(() => {
+  React.useEffect(() => {
     checkToken();
   }, []);
 
@@ -46,8 +48,18 @@ const Login = ({navigation}) => {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.container}
       >
-        <LoginForm />
-        <RegisterForm />
+        {toggleForm ? <LoginForm /> : <RegisterForm />}
+        <Text>
+          {toggleForm
+            ? 'No account yet? Please register!'
+            : 'Already have an account? Login!'}
+        </Text>
+        <Button
+          title={toggleForm ? 'Register here!' : 'Login!'}
+          onPress={() => {
+            setToggleForm(!toggleForm);
+          }}
+        />
       </KeyboardAvoidingView>
     </TouchableOpacity>
   );

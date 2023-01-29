@@ -10,8 +10,9 @@ function RegisterForm(props) {
     formState: {errors},
   } = useForm({
     defaultValues: {username: '', password: '', email: '', full_name: ''},
+    mode: 'onBlur',
   });
-  const {postUser} = useUser();
+  const {postUser, checkUsername} = useUser();
 
   const register = async (registerData) => {
     console.log('Registering: ', registerData);
@@ -24,32 +25,48 @@ function RegisterForm(props) {
     }
   };
 
+  const checkUser = async (username) => {
+    try {
+      const userAvailable = await checkUsername(username);
+      console.log('checkUser', userAvailable);
+      return userAvailable || 'Username is already taken';
+    } catch (error) {
+      console.error('checkUser', error.message);
+    }
+  };
+
   return (
     <>
       <Text h3>Registeration Form</Text>
       <Controller
         control={control}
-        rules={{required: true, minLength: 3}}
+        rules={{
+          required: {value: true, message: 'This is required.'},
+          minLength: {
+            value: 3,
+            message: 'Username min length is 3 characters!',
+          },
+          validate: checkUser,
+        }}
         render={({field: {onChange, onBlur, value}}) => (
           <Input
             onBlur={onBlur}
             onChangeText={onChange}
             value={value}
             placeholder="Username"
+            autoCapitalize="none"
+            errorMessage={errors.username && errors.username.message}
           />
         )}
         name="username"
       />
-      {errors.username?.type === 'required' && (
-        <Text>Username is required!</Text>
-      )}
-      {errors.username?.type === 'minLength' && (
-        <Text>Username min length is 3 characters!</Text>
-      )}
 
       <Controller
         control={control}
-        rules={{required: true, minLength: 5}}
+        rules={{
+          required: {value: true, message: 'This is required.'},
+          minLength: 5,
+        }}
         render={({field: {onChange, onBlur, value}}) => (
           <Input
             onBlur={onBlur}
@@ -57,6 +74,7 @@ function RegisterForm(props) {
             value={value}
             placeholder="Password"
             secureTextEntry={true}
+            autoCapitalize="none"
           />
         )}
         name="password"
@@ -65,13 +83,14 @@ function RegisterForm(props) {
 
       <Controller
         control={control}
-        rules={{required: true}}
+        rules={{required: {value: true, message: 'This is required.'}}}
         render={({field: {onChange, onBlur, value}}) => (
           <Input
             onBlur={onBlur}
             onChangeText={onChange}
             value={value}
             placeholder="Email"
+            autoCapitalize="none"
           />
         )}
         name="email"
@@ -87,6 +106,7 @@ function RegisterForm(props) {
             onChangeText={onChange}
             value={value}
             placeholder="Full name"
+            autoCapitalize="words"
           />
         )}
         name="full_name"

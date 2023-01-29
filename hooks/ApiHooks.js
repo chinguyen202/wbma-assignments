@@ -21,12 +21,11 @@ const useMedia = () => {
       const response = await fetch(baseUrl + 'media');
       const json = await response.json();
       const media = await Promise.all(
-        json.map(async (file) => {
-          const fileResponse = await fetch(baseUrl + 'media/' + file.file_id);
+        json.map(async (item) => {
+          const fileResponse = await fetch(baseUrl + 'media/' + item.file_id);
           return await fileResponse.json();
         })
       );
-
       setMediaArray(media);
     } catch (error) {
       console.error('List, loadMedia', error);
@@ -44,27 +43,24 @@ const useAuthentication = () => {
   const postLogin = async (userCredentials) => {
     // user credentials format: {username: 'someUsername', password: 'somePassword'}
     const options = {
-      // TODO: add method, headers and body for sending json data with POST
-      method: 'post',
+      method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(userCredentials),
     };
     try {
-      // TODO: use fetch to send request to login endpoint and return the result as json, handle errors with try/catch and response.ok
       return await doFetch(baseUrl + 'login', options);
     } catch (error) {
-      throw new Error('postLogin: ' + error.message);
+      throw new Error(error.message);
     }
   };
+
   return {postLogin};
 };
 
-// https://media.mw.metropolia.fi/wbma/docs/#api-User
 const useUser = () => {
   const getUserByToken = async (token) => {
-    // call https://media.mw.metropolia.fi/wbma/docs/#api-User-CheckUserName
     const options = {
       method: 'GET',
       headers: {'x-access-token': token},
@@ -72,12 +68,13 @@ const useUser = () => {
     try {
       return await doFetch(baseUrl + 'users/user', options);
     } catch (error) {
-      throw new Error('checkUser: ' + error.message);
+      throw new Error('getUserByToken: ' + error.message);
     }
   };
+
   const postUser = async (userData) => {
     const options = {
-      method: 'post',
+      method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
@@ -89,7 +86,22 @@ const useUser = () => {
       throw new Error('postUser: ' + error.message);
     }
   };
-  return {getUserByToken, postUser};
+
+  const checkUsername = async (username) => {
+    const options = {
+      method: 'GET',
+    };
+    try {
+      const result = await doFetch(
+        baseUrl + 'users/username/' + username,
+        options
+      );
+      return result.available;
+    } catch (error) {
+      throw new Error('checkUsername: ' + error.message);
+    }
+  };
+  return {getUserByToken, postUser, checkUsername};
 };
 
 const useTag = () => {
@@ -97,7 +109,7 @@ const useTag = () => {
     try {
       return await doFetch(baseUrl + 'tags/' + tag);
     } catch (error) {
-      throw new Error('getFilesByTag, ' + error.message);
+      throw new Error('getFilesByTag: ', error.message);
     }
   };
   return {getFilesByTag};
