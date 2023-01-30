@@ -1,81 +1,58 @@
-import React from 'react';
-import {
-  Keyboard,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  TouchableOpacity,
-} from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, {useContext, useEffect, useState} from 'react';
+import {Keyboard, ScrollView, TouchableOpacity} from 'react-native';
 import PropTypes from 'prop-types';
 import {MainContext} from '../contexts/MainContext';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useUser} from '../hooks/ApiHooks';
 import LoginForm from '../components/LoginForm';
 import RegisterForm from '../components/RegisterForm';
-import {Button, Text} from '@rneui/themed';
+import {Button, Card, Text} from '@rneui/base';
 
 const Login = ({navigation}) => {
-  // props is needed for navigation
-  const {setIsLoggedIn, setUser} = React.useContext(MainContext);
+  const {setIsLoggedIn, setUser} = useContext(MainContext);
   const {getUserByToken} = useUser();
-
-  const [toggleForm, setToggleForm] = React.useState(true);
+  const [toggleForm, setToggleForm] = useState(true);
 
   const checkToken = async () => {
     try {
       const userToken = await AsyncStorage.getItem('userToken');
+      // if no token available, do nothing
       if (userToken === null) return;
       const userData = await getUserByToken(userToken);
       console.log('checkToken', userData);
       setUser(userData);
       setIsLoggedIn(true);
     } catch (error) {
-      console.log('no valid token available');
+      console.error('checkToken', error);
     }
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     checkToken();
   }, []);
 
   return (
     <ScrollView>
-      <TouchableOpacity
-        onPress={() => Keyboard.dismiss()}
-        style={{flex: 1}}
-        activeOpacity={1}
-      >
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          style={styles.container}
-        >
-          {toggleForm ? <LoginForm /> : <RegisterForm />}
+      <TouchableOpacity onPress={() => Keyboard.dismiss()} activeOpacity={1}>
+        {toggleForm ? <LoginForm /> : <RegisterForm />}
+        <Card>
           <Text>
             {toggleForm
-              ? 'No account yet? Please register!'
-              : 'Already have an account? Login!'}
+              ? 'No account yet? Please register.'
+              : 'Already have an account? Please login.'}
           </Text>
           <Button
-            title={toggleForm ? 'Register here!' : 'Login!'}
+            type="outline"
+            title={toggleForm ? 'Go to register' : 'Go to login'}
             onPress={() => {
               setToggleForm(!toggleForm);
             }}
           />
-        </KeyboardAvoidingView>
+        </Card>
       </TouchableOpacity>
     </ScrollView>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
 
 Login.propTypes = {
   navigation: PropTypes.object,
