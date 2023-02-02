@@ -1,13 +1,7 @@
 import {Button, Card, Input} from '@rneui/themed';
 import PropTypes from 'prop-types';
 import {Controller, useForm} from 'react-hook-form';
-import {
-  ActivityIndicator,
-  Alert,
-  Keyboard,
-  ScrollView,
-  TouchableOpacity,
-} from 'react-native';
+import {Alert, Keyboard, ScrollView, TouchableOpacity} from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import {useCallback, useContext, useState} from 'react';
 import {useMedia, useTag} from '../hooks/ApiHooks';
@@ -87,7 +81,7 @@ const Upload = ({navigation}) => {
             setUpdate(!update);
             // reset
             reset();
-            // navigate to home
+            // TODO: navigate to home
             navigation.navigate('Home');
           },
         },
@@ -180,6 +174,7 @@ const Upload = ({navigation}) => {
           <Button
             title="Upload!"
             onPress={handleSubmit(upload)}
+            loading={loading}
             disabled={!mediafile.uri || errors.title || errors.description}
           />
           <Button
@@ -188,9 +183,6 @@ const Upload = ({navigation}) => {
             type="outline"
             style={{marginTop: 10}}
           />
-          {loading && (
-            <ActivityIndicator size="small" style={{marginTop: 10}} />
-          )}
         </Card>
       </TouchableOpacity>
     </ScrollView>
