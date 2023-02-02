@@ -1,6 +1,6 @@
 import {useContext, useEffect, useState} from 'react';
 import {MainContext} from '../contexts/MainContext';
-import {baseUrl} from '../utils/variables';
+import {appId, baseUrl} from '../utils/variables';
 
 const doFetch = async (url, options) => {
   const response = await fetch(url, options);
@@ -20,11 +20,13 @@ const useMedia = () => {
 
   const loadMedia = async () => {
     try {
-      const response = await fetch(baseUrl + 'media');
-      const json = await response.json();
+      // const response = await fetch(baseUrl + 'media');
+      // const json = await response.json();
+
+      const json = await useTag().getFilesByTag(appId);
       const media = await Promise.all(
-        json.map(async (file) => {
-          const fileResponse = await fetch(baseUrl + 'media/' + file.file_id);
+        json.map(async (item) => {
+          const fileResponse = await fetch(baseUrl + 'media/' + item.file_id);
           return await fileResponse.json();
         })
       );
@@ -33,6 +35,7 @@ const useMedia = () => {
       console.error('List, loadMedia', error);
     }
   };
+
   useEffect(() => {
     loadMedia();
     // load media when update state changes in main context
@@ -41,17 +44,17 @@ const useMedia = () => {
 
   const postMedia = async (fileData, token) => {
     const options = {
-      method: 'post',
+      method: 'POST',
       headers: {
-        'x-access-token': token,
         'Content-Type': 'multipart/form-data',
+        'x-access-token': token,
       },
       body: fileData,
     };
     try {
       return await doFetch(baseUrl + 'media', options);
     } catch (error) {
-      throw new Error('postUpload: ' + error.message);
+      throw new Error('postMedia ' + error.message);
     }
   };
 
@@ -62,27 +65,24 @@ const useAuthentication = () => {
   const postLogin = async (userCredentials) => {
     // user credentials format: {username: 'someUsername', password: 'somePassword'}
     const options = {
-      // TODO: add method, headers and body for sending json data with POST
-      method: 'post',
+      method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(userCredentials),
     };
     try {
-      // TODO: use fetch to send request to login endpoint and return the result as json, handle errors with try/catch and response.ok
       return await doFetch(baseUrl + 'login', options);
     } catch (error) {
-      throw new Error('postLogin: ' + error.message);
+      throw new Error(error.message);
     }
   };
+
   return {postLogin};
 };
 
-// https://media.mw.metropolia.fi/wbma/docs/#api-User
 const useUser = () => {
   const getUserByToken = async (token) => {
-    // call https://media.mw.metropolia.fi/wbma/docs/#api-User-CheckUserName
     const options = {
       method: 'GET',
       headers: {'x-access-token': token},
@@ -90,12 +90,13 @@ const useUser = () => {
     try {
       return await doFetch(baseUrl + 'users/user', options);
     } catch (error) {
-      throw new Error('checkUser: ' + error.message);
+      throw new Error('getUserByToken: ' + error.message);
     }
   };
+
   const postUser = async (userData) => {
     const options = {
-      method: 'post',
+      method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
@@ -109,15 +110,36 @@ const useUser = () => {
   };
 
   const checkUsername = async (username) => {
+    const options = {
+      method: 'GET',
+    };
     try {
-      const result = await doFetch(baseUrl + 'users/username/' + username);
+      const result = await doFetch(
+        baseUrl + 'users/username/' + username,
+        options
+      );
       return result.available;
     } catch (error) {
       throw new Error('checkUsername: ' + error.message);
     }
   };
 
-  return {getUserByToken, postUser, checkUsername};
+  const putUser = async (userData, token) => {
+    const options = {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-access-token': token,
+      },
+      body: JSON.stringify(userData),
+    };
+    try {
+      return await doFetch(baseUrl + 'users', options);
+    } catch (error) {
+      throw new Error('putUser: ' + error.message);
+    }
+  };
+  return {getUserByToken, postUser, checkUsername, putUser};
 };
 
 const useTag = () => {
@@ -125,10 +147,25 @@ const useTag = () => {
     try {
       return await doFetch(baseUrl + 'tags/' + tag);
     } catch (error) {
-      throw new Error('getFilesByTag, ' + error.message);
+      throw new Error('getFilesByTag: ', error.message);
     }
   };
-  return {getFilesByTag};
+  const postTag = async (data, token) => {
+    const options = {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-access-token': token,
+      },
+      body: JSON.stringify(data),
+    };
+    try {
+      return await doFetch(baseUrl + 'tags/', options);
+    } catch (error) {
+      throw new Error('postMedia ' + error.message);
+    }
+  };
+  return {getFilesByTag, postTag};
 };
 
 export {useMedia, useAuthentication, useUser, useTag};

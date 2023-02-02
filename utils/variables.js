@@ -1,4 +1,5 @@
 const baseUrl = 'https://media.mw.metropolia.fi/wbma/';
-const uploadsUrl = 'https://media.mw.metropolia.fi/wbma/uploads/';
+const uploadUrl = 'https://media.mw.metropolia.fi/wbma/uploads/';
+const appId = 'chinguyen';
 
-export {baseUrl, uploadsUrl};
+export {baseUrl, uploadUrl, appId};
