@@ -24,6 +24,7 @@ const useMedia = () => {
       // const json = await response.json();
 
       const json = await useTag().getFilesByTag(appId);
+      json.reverse();
       const media = await Promise.all(
         json.map(async (item) => {
           const fileResponse = await fetch(baseUrl + 'media/' + item.file_id);
@@ -124,6 +125,16 @@ const useUser = () => {
     }
   };
 
+  const getUserById = async (id, token) => {
+    try {
+      return await doFetch(baseUrl + 'users/' + id, {
+        headers: {'x-access-token': token},
+      });
+    } catch (error) {
+      throw new Error('getUserById, ' + error.message);
+    }
+  };
+
   const putUser = async (userData, token) => {
     const options = {
       method: 'PUT',
@@ -139,7 +150,7 @@ const useUser = () => {
       throw new Error('putUser: ' + error.message);
     }
   };
-  return {getUserByToken, postUser, checkUsername, putUser};
+  return {getUserByToken, postUser, checkUsername, putUser, getUserById};
 };
 
 const useTag = () => {
@@ -150,6 +161,7 @@ const useTag = () => {
       throw new Error('getFilesByTag: ', error.message);
     }
   };
+
   const postTag = async (data, token) => {
     const options = {
       method: 'POST',

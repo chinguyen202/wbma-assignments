@@ -3,12 +3,13 @@ import PropTypes from 'prop-types';
 import {Controller, useForm} from 'react-hook-form';
 import {Alert, Keyboard, ScrollView, TouchableOpacity} from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import {useCallback, useContext, useState} from 'react';
+import React, {useCallback, useContext, useRef, useState} from 'react';
 import {useMedia, useTag} from '../hooks/ApiHooks';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {MainContext} from '../contexts/MainContext';
 import {useFocusEffect} from '@react-navigation/native';
 import {appId} from '../utils/variables';
+import {Video} from 'expo-av';
 
 const Upload = ({navigation}) => {
   const [mediafile, setMediafile] = useState({});
@@ -16,6 +17,7 @@ const Upload = ({navigation}) => {
   const {postMedia} = useMedia();
   const {postTag} = useTag();
   const {update, setUpdate} = useContext(MainContext);
+  const ref = useRef(null);
 
   const {
     control,
@@ -81,7 +83,7 @@ const Upload = ({navigation}) => {
             setUpdate(!update);
             // reset
             reset();
-            // TODO: navigate to home
+
             navigation.navigate('Home');
           },
         },
@@ -116,7 +118,16 @@ const Upload = ({navigation}) => {
       >
         <Card>
           {mediafile.type === 'video' ? (
-            <Card.Title>Video</Card.Title>
+            <Video
+              ref={ref}
+              source={{uri: mediafile.uri}}
+              style={{width: '100%', height: 200}}
+              resizeMode="cover"
+              useNativeControls
+              onError={(error) => {
+                console.log(error);
+              }}
+            />
           ) : (
             <Card.Image
               source={{
